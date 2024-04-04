@@ -52,16 +52,4 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            script {
-                // Stop and remove containers
-                docker.container('grafana').stop()
-                docker.container('grafana').remove()
-
-                docker.container('prometheus').stop()
-                docker.container('prometheus').remove()
-            }
-        }
-    }
-}
+    
