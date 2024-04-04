@@ -20,19 +20,46 @@ pipeline {
                 }
             }
         }
+        stage('Install Prometheus') {
+            steps {
+                script {
+                    // Pull Prometheus image
+                    docker.image('prom/prometheus').pull()
+                    // Start Prometheus container
+                    docker.container('prometheus')
+                        .withRun("--name prometheus -p 9090:9090")
+                        .run('prom/prometheus')
+                }
+            }
+        }
+        stage('Install Grafana') {
+            steps {
+                script {
+                    // Pull Grafana image
+                    docker.image('grafana/grafana').pull()
+                    // Start Grafana container
+                    docker.container('grafana')
+                        .withRun("--name grafana -p 3000:3000")
+                        .run('grafana/grafana')
+                }
+            }
+        }
         stage('Build') {
             steps {
                 echo 'Building...'
+                // Ajoutez ici les étapes de construction de votre application
             }
         }
         stage('Test') {
             steps {
                 echo 'Testing...'
+                // Ajoutez ici les étapes de test de votre application
             }
         }
         stage('Deploy') {
             steps {
                 echo 'Deploying...'
+                // Ajoutez ici les étapes de déploiement de votre application
             }
         }
     }
