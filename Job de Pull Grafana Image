@@ -1,0 +1,13 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Pull Grafana Image') {
+            steps {
+                script {
+                    docker.image('grafana/grafana').pull()
+                }
+            }
+        }
+    }
+}
