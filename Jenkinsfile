@@ -2,10 +2,9 @@ pipeline {
     agent any
     
     environment {
-        DOCKER_CREDENTIALS_ID = 'votre_identifiant_de_credentials_docker' // ID des informations d'identification Docker dans Jenkins
-        DOCKER_IMAGE_NAME = 'mon_grafana' // Nom de votre image Docker
-        DOCKER_REGISTRY_URL = 'votre_registry_docker_url' // URL de votre registre Docker
-        GRAFANA_PORT = '3000' // Port sur lequel Grafana sera exposé
+        DOCKER_REGISTRY_URL = 'https://192.168.127.134:8006/api2/json'
+        DOCKER_IMAGE_NAME = 'mon_grafana'
+        DOCKER_CREDENTIALS_ID = 'votre_identifiant_de_credentials_docker'
     }
     
     stages {
@@ -20,23 +19,48 @@ pipeline {
             steps {
                 script {
                     // Construire l'image Docker avec le nom spécifié
-                    docker.build("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}")
-                    
+                    def dockerImage = docker.build("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}")
+
                     // Authentification Docker pour accéder au registre Docker
                     docker.withRegistry("${DOCKER_REGISTRY_URL}", "${DOCKER_CREDENTIALS_ID}") {
                         // Pousser l'image vers le registre Docker
-                        docker.image("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}").push()
+                        dockerImage.push()
                     }
                 }
             }
         }
-        
-        stage('Run Grafana') {
+
+        stage('Build and Run Grafana') {
             steps {
                 script {
-                    // Exécuter l'image Docker de Grafana, en exposant le port spécifié
-                    docker.image("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}").run("-p ${GRAFANA_PORT}:3000 --name grafana -d")
+                    // Run Grafana container
+                    docker.image("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}").run('-p 3000:3000 --name grafana -d')
                 }
+            }
+        }
+
+        stage('Build and Run Prometheus') {
+            steps {
+                script {
+                    // Pull Prometheus Docker image
+                    docker.image('prom/prometheus:latest').pull()
+
+                    // Run Prometheus container
+                    docker.image('prom/prometheus:latest').run('-p 9090:9090 --name prometheus -d')
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                // Stop and remove containers
+                docker.container('grafana').stop()
+                docker.container('grafana').remove()
+
+                docker.container('prometheus').stop()
+                docker.container('prometheus').remove()
             }
         }
     }
