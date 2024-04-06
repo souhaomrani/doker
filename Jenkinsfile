@@ -1,55 +1,48 @@
 pipeline {
     agent any
-    
-    environment {
-        DOCKER_REGISTRY_URL = 'https://192.168.127.134:8006/api2/json'
-        DOCKER_IMAGE_NAME = 'mon_grafana'
-        DOCKER_CREDENTIALS_ID = 'votre_identifiant_de_credentials_docker'
-    }
-    
+
     stages {
-        stage('Checkout SCM') {
+        stage('Build') {
             steps {
-                // Vérifier le code source à partir du SCM (Système de Contrôle de Versions)
-                checkout scm
-            }
-        }
-        
-        stage('Build and Push Grafana Docker Image') {
-            steps {
-                script {
-                    // Construire l'image Docker avec le nom spécifié
-                    def dockerImage = docker.build("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}")
-
-                    // Authentification Docker pour accéder au registre Docker
-                    docker.withRegistry("${DOCKER_REGISTRY_URL}", "${DOCKER_CREDENTIALS_ID}") {
-                        // Pousser l'image vers le registre Docker
-                        dockerImage.push()
-                    }
-                }
+                // Étape de build - Exemple de commande pour construire votre application
+                sh 'mvn clean package'  // Exemple pour Maven
+                // ou
+                // sh 'npm install'       // Exemple pour Node.js
             }
         }
 
-        stage('Build and Run Grafana') {
+        stage('Test') {
             steps {
-                script {
-                    // Run Grafana container
-                    docker.image("${DOCKER_REGISTRY_URL}/${DOCKER_IMAGE_NAME}").run('-p 3000:3000 --name grafana -d')
-                }
+                // Étape de test - Exemple de commande pour exécuter vos tests
+                sh 'mvn test'  // Exemple pour Maven
+                // ou
+                // sh 'npm test'  // Exemple pour Node.js
             }
         }
 
-        stage('Build and Run Prometheus') {
+        stage('Deploy') {
             steps {
-                script {
-                    // Pull Prometheus Docker image
-                    docker.image('prom/prometheus:latest').pull()
-
-                    // Run Prometheus container
-                    docker.image('prom/prometheus:latest').run('-p 9090:9090 --name prometheus -d')
-                }
+                // Étape de déploiement - Exemple de commande pour déployer votre application
+                sh 'kubectl apply -f deployment.yaml'  // Exemple pour Kubernetes
+                // ou
+                // sh 'ansible-playbook deploy.yml'     // Exemple pour Ansible
             }
         }
     }
 
-    
+    post {
+        success {
+            // Actions à effectuer en cas de succès du pipeline
+            echo 'Le pipeline s\'est exécuté avec succès!'
+            // Par exemple, envoyer une notification
+            // slackSend channel: '#builds', color: 'good', message: "Build réussi pour ${env.JOB_NAME}"
+        }
+        failure {
+            // Actions à effectuer en cas d'échec du pipeline
+            echo 'Le pipeline a échoué.'
+            // Par exemple, envoyer une notification
+            // slackSend channel: '#builds', color: 'danger', message: "Build échoué pour ${env.JOB_NAME}"
+        }
+    }
+}
+
