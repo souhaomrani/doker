@@ -8,10 +8,10 @@ scrape_configs:
 
   - job_name: 'proxmox'
     static_configs:
-      - targets: ['<192.168.127.134>:<8006>']
+      - targets: ['192.168.127.134:8006']
     metrics_path: '/api2/json'
     params:
-      node: ['<locale>']
+      node: ['pve']
     bearer_token: '<faf0b3f2-8df5-48ec-b726-6fadc60aa5d1>'
     scheme: https
     insecure_skip_verify: true
