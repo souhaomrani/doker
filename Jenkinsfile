@@ -1,38 +1,29 @@
 pipeline {
     agent any
-
-    environment {
+        environment {
         PM_API_URL = "https://192.168.127.134:8006/api2/json"
         PM_USER = "root"
         PM_PASSWORD = "rootroot"
-    }
-
-    stages {
-        stage('Build') {
+             }
+stages {
+        stage('Test GitHub Connection') {
             steps {
-                sh 'mvn clean package'  // Exemple pour Maven
+                script {
+                    def gitUrl = 'https://github.com/souhaomrani/doker.git'
+                    // Checkout the GitHub repository using configured credentials
+                    checkout([$class: 'GitSCM',
+                              branches: [[name: '*/main']],
+                              doGenerateSubmoduleConfigurations: false,
+                              extensions: [[$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]],
+                              userRemoteConfigs: [[url: gitUrl]]])
+                    echo "Connection to GitHub repository successful"
+                }
             }
         }
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'  // Exemple pour Maven
-            }
-        }
-
         stage('Deploy') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'  // Exemple pour Kubernetes
+                sh 'docker-compose up -d'
             }
-        }
-    }
-
-    post {
-        success {
-            echo 'Le pipeline s\'est exécuté avec succès!'
-        }
-        failure {
-            echo 'Le pipeline a échoué.'
         }
     }
 }
