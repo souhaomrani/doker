@@ -8,7 +8,7 @@ scrape_configs:
 
   - job_name: 'proxmox'
     static_configs:
-      - targets: ['192.168.127.136:8006']
+      - targets: ['192.168.127.134:8006']
     metrics_path: '/api2/json'
     params:
       node: ['pve']
