@@ -14,14 +14,6 @@ scrape_configs:
       node: ['pve']
     bearer_token: '<faf0b3f2-8df5-48ec-b726-6fadc60aa5d1>'
     scheme: https
-
-rule_files:
-  - "alert.rules.yml"
-
-alerting:
-  alertmanagers:
-    - static_configs:
-        - targets:
-            - "alertmanager:9093"
+   
 
 
