@@ -20,3 +20,4 @@ groups:
         annotations:
           summary: "Low disk space detected"
           description: "Instance {{ $labels.instance }} has less than 10% free disk space"
+
