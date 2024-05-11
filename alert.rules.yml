@@ -9,3 +9,11 @@ groups:
         annotations:
           summary: "High CPU load detected"
           description: "Instance {{ $labels.instance }} has high CPU load ({{ $value }}%)"
+ - alert: LowDiskSpace
+        expr: (node_filesystem_free_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space detected"
+          description: "Instance {{ $labels.instance }} has less than 10% free disk space"
