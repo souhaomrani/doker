@@ -1,0 +1,11 @@
+groups:
+  - name: example
+    rules:
+      - alert: HighCpuLoad
+        expr: avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100 < 20
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High CPU load detected"
+          description: "Instance {{ $labels.instance }} has high CPU load ({{ $value }}%)"
